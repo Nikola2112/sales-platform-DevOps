@@ -1,0 +1,40 @@
+name: Redis CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy-redis:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      ECR_REGISTRY: 664418977283.dkr.ecr.us-east-1.amazonaws.com
+      FRONTEND_REPOSITORY: prod-redis
+      CLUSTER_NAME: Project2
+      FRONTEND_SERVICE_NAME: redis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push Redis Docker image
+        run: |
+          docker build -t $ECR_REGISTRY/$REDIS_REPOSITORY:latest -f redis/Dockerfile redis
+          docker push $ECR_REGISTRY/$REDIS_REPOSITORY:latest
+
+      - name: Deploy Redis to ECS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws ecs update-service --cluster $CLUSTER_NAME --service $REDIS_SERVICE_NAME --force-new-deployment

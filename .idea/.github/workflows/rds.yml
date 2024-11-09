@@ -1,0 +1,40 @@
+name: RDS CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy-rds:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      ECR_REGISTRY: 664418977283.dkr.ecr.us-east-1.amazonaws.com
+      FRONTEND_REPOSITORY: prod-rds
+      CLUSTER_NAME: Project2
+      FRONTEND_SERVICE_NAME: rds
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push RDS Docker image
+        run: |
+          docker build -t $ECR_REGISTRY/$RDS_REPOSITORY:latest -f rds/Dockerfile rds
+          docker push $ECR_REGISTRY/$RDS_REPOSITORY:latest
+
+      - name: Deploy RDS to ECS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws ecs update-service --cluster $CLUSTER_NAME --service $RDS_SERVICE_NAME --force-new-deployment
