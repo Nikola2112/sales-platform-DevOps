@@ -30,7 +30,7 @@ jobs:
       - name: Build and push frontend Docker image
         run: |
           docker build -t $ECR_REGISTRY/$FRONTEND_REPOSITORY:latest -f frontend/Dockerfile frontend
-          docker push $ECR_REGISTRY/$FRONTEND_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$REDIS_REPOSITORY:$GITHUB_SHA
 
       - name: Deploy frontend to ECS
         env:

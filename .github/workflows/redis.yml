@@ -12,9 +12,9 @@ jobs:
     env:
       AWS_REGION: us-east-1
       ECR_REGISTRY: 664418977283.dkr.ecr.us-east-1.amazonaws.com
-      FRONTEND_REPOSITORY: prod-redis
+      REDIS_REPOSITORY: prod-redis
       CLUSTER_NAME: Project2
-      FRONTEND_SERVICE_NAME: redis
+      REDIS_SERVICE_NAME: redis
 
     steps:
       - name: Checkout code
@@ -29,8 +29,8 @@ jobs:
 
       - name: Build and push Redis Docker image
         run: |
-          docker build -t $ECR_REGISTRY/$REDIS_REPOSITORY:latest -f redis/Dockerfile redis
-          docker push $ECR_REGISTRY/$REDIS_REPOSITORY:latest
+          docker build -t $ECR_REGISTRY/$REDIS_REPOSITORY:$GITHUB_SHA -f redis/Dockerfile redis
+          docker push $ECR_REGISTRY/$REDIS_REPOSITORY:$GITHUB_SHA
 
       - name: Deploy Redis to ECS
         env:

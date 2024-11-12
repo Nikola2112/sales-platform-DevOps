@@ -30,7 +30,7 @@ jobs:
       - name: Build and push RDS Docker image
         run: |
           docker build -t $ECR_REGISTRY/$RDS_REPOSITORY:latest -f rds/Dockerfile rds
-          docker push $ECR_REGISTRY/$RDS_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$REDIS_REPOSITORY:$GITHUB_SHA
 
       - name: Deploy RDS to ECS
         env:
